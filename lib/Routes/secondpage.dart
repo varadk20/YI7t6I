@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class SecondRoute extends StatefulWidget {
-  const SecondRoute({super.key});
+class WidgetSelectionPage extends StatefulWidget {
+  const WidgetSelectionPage({super.key});
 
   @override
-  State<SecondRoute> createState() => _SecondRouteState();
+  State<WidgetSelectionPage> createState() => _WidgetSelectionPageState();
 }
 
-class _SecondRouteState extends State<SecondRoute> {
+class _WidgetSelectionPageState extends State<WidgetSelectionPage> {
   final List<String> _selectedItems = [];
   bool _isTextFieldSelected = false;
   bool _isImageSelected = false;
@@ -17,7 +17,7 @@ class _SecondRouteState extends State<SecondRoute> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Import Widgets'),
+        title: const Text('Select Widgets'),
         backgroundColor: Colors.lightGreen[100],
       ),
       body: Container(
@@ -28,25 +28,26 @@ class _SecondRouteState extends State<SecondRoute> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildCheckboxItem('TextField', _isTextFieldSelected, (value) {
+                _buildCheckboxItem('Text Widget', _isTextFieldSelected, (value) {
                   setState(() {
                     _isTextFieldSelected = value!;
                     _updateSelectedItems('TextField', value);
                   });
                 }),
-                _buildCheckboxItem('Image', _isImageSelected, (value) {
+                _buildCheckboxItem('Image Widget', _isImageSelected, (value) {
                   setState(() {
                     _isImageSelected = value!;
                     _updateSelectedItems('Image', value);
                   });
                 }),
-                _buildCheckboxItem('SaveButton', _isSaveButtonSelected, (value) {
+                _buildCheckboxItem('Button Widget', _isSaveButtonSelected,
+                    (value) {
                   setState(() {
                     _isSaveButtonSelected = value!;
                     _updateSelectedItems('SaveButton', value);
                   });
                 }),
-                const SizedBox(height: 20),
+                const SizedBox(height: 100),
                 ElevatedButton(
                   onPressed: () {
                     if (_selectedItems.isNotEmpty) {
@@ -54,7 +55,7 @@ class _SecondRouteState extends State<SecondRoute> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: Colors.green.shade200,
                     minimumSize: const Size(200, 60),
                     side: const BorderSide(color: Colors.black, width: 1),
                   ),
@@ -77,51 +78,49 @@ class _SecondRouteState extends State<SecondRoute> {
   Widget _buildCheckboxItem(
       String label, bool value, ValueChanged<bool?> onChanged) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      margin: const EdgeInsets.symmetric(vertical: 30.0),
       decoration: BoxDecoration(
-          color: Colors.grey[400], borderRadius: BorderRadius.circular(8)),
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: GestureDetector(
         onTap: () {
           onChanged(!value);
         },
-        child: ListTile(
-          contentPadding: const EdgeInsets.only(left: 24.0),
-          title: Row(
-            children: [
-              Container(
-                color: Colors.white,
-                height: 30,
-                width: 30,
-                child: Center(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    height: 24,
-                    width: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: value ? Colors.green : Colors.grey,
-                      border: Border.all(color: Colors.green),
-                    ),
-                    child: value
-                        ? null
-                        : const SizedBox(),
+        child: SizedBox(
+          width: 300,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Container(
+              color: Colors.white,
+              width: 50,
+              height: double.infinity, // Matches ListTile height
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  height: 30,
+                  width: 30,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: value ? Colors.green : Colors.grey.shade300,
+                    // border: Border.all(color: Colors.green),
                   ),
                 ),
               ),
-              const SizedBox(width: 20),
-              Text(label),
-            ],
+            ),
+            title: Text(label),
+            horizontalTitleGap: 20.0, // Gap between leading and title
           ),
         ),
       ),
     );
   }
 
-  void _updateSelectedItems(String item, bool isSelected) {
+  void _updateSelectedItems(String label, bool isSelected) {
     if (isSelected) {
-      _selectedItems.add(item);
+      _selectedItems.add(label);
     } else {
-      _selectedItems.remove(item);
+      _selectedItems.remove(label);
     }
   }
 }

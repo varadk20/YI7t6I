@@ -39,7 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
   final TextEditingController _textController = TextEditingController();
   XFile? _selectedImage;
-  String _message = 'No widget added.';
+  String _message = 'No widget is added';
 
   Future<void> _pickImage() async {
     try {
@@ -53,11 +53,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _saveData() async {
-    bool hasContentToSave = _selectedWidgets.contains('Image') ||
-        _selectedWidgets.contains('TextField') ||
-        _selectedImage != null;
-
-    if (!hasContentToSave) {
+    // Check if any widget has been added
+    if (_selectedWidgets.isEmpty ||
+        (!_selectedWidgets.contains('Image') &&
+            !_selectedWidgets.contains('TextField') &&
+            _selectedImage == null)) {
       setState(() {
         _message = 'Add at least a widget to save.';
       });
@@ -78,17 +78,20 @@ class _MyHomePageState extends State<MyHomePage> {
         'image': imageBase64,
       };
 
+      // Check if there's anything to save
       if (data['text'] != null || data['image'] != null) {
         await _database.ref('saved_data').push().set(data);
 
-        setState(() {
-          _message = 'Data saved successfully!';
-        });
+        // setState(() {
+        //   _message = 'Data saved successfully!';
+        // });
 
-        // Show a green Snackbar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Data saved successfully!'),
+            content: Text(
+              'Successfully Saved',
+              textAlign: TextAlign.center,
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -102,7 +105,6 @@ class _MyHomePageState extends State<MyHomePage> {
         _message = 'Failed to save data: $e';
       });
 
-      // Show an error Snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to save data: $e'),
@@ -122,56 +124,111 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Container(
               width: 350,
               height: 600,
               alignment: Alignment.center,
               padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 20),
+              margin: const EdgeInsets.only(bottom: 50, top: 30),
               decoration: BoxDecoration(
                 color: Colors.lightGreen[100],
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (_selectedWidgets.contains('TextField'))
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextField(
-                        controller: _textController,
-                        decoration: const InputDecoration(
-                          labelText: 'Enter Text',
-                          border: OutlineInputBorder(),
+                  Column(
+                    children: [
+                      if (_selectedWidgets.contains('TextField'))
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Column(
+                            children: [
+                              const SizedBox(
+                                height: 50,
+                              ), // Top margin for TextField
+                              SizedBox(
+                                width:
+                                    300, // Match the width of the Upload Image button
+                                child: TextField(
+                                  controller: _textController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Enter Text',
+                                    border: OutlineInputBorder(),
+                                    
+                                  ),
+                                  
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (_selectedWidgets.contains('Image'))
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Column(
+                            children: [
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              ElevatedButton(
+                                onPressed: _pickImage,
+                                style: ElevatedButton.styleFrom(
+                                    minimumSize: const Size(300, 50),
+                                    backgroundColor: Colors.grey.shade300,
+                                    shape: RoundedRectangleBorder()),
+                                child: const Text(
+                                  'Upload Image',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _selectedImage != null
+                                  ? Image.file(
+                                      File(_selectedImage!.path),
+                                      width: 200,
+                                      height: 200,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : const Text('No image selected'),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  // Center the message
+                  if (_message.isNotEmpty)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          _message,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 30,
+                            // fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                     ),
-                  if (_selectedWidgets.contains('Image'))
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Column(
-                        children: [
-                          ElevatedButton(
-                            onPressed: _pickImage,
-                            child: const Text('Pick an Image'),
-                          ),
-                          const SizedBox(height: 16),
-                          _selectedImage != null
-                              ? Image.file(File(_selectedImage!.path),
-                                  width: 200, height: 200, fit: BoxFit.cover)
-                              : const Text('No image selected'),
-                        ],
-                      ),
-                    ),
+                  // Save Button at the bottom
                   if (_selectedWidgets.contains('SaveButton'))
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      padding: const EdgeInsets.only(top: 8, bottom: 80),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(200, 60),
+                          minimumSize: const Size(80, 50),
                           side: const BorderSide(color: Colors.black, width: 1),
-                          backgroundColor: Colors.green,
+                          backgroundColor: Colors.green.shade200,
+                          shape: RoundedRectangleBorder(),
                         ),
                         onPressed: _saveData,
                         child: const Text(
@@ -181,16 +238,6 @@ class _MyHomePageState extends State<MyHomePage> {
                             color: Colors.black,
                           ),
                         ),
-                      ),
-                    ),
-                  // The message will be shown here inside the existing container
-                  if (_message.isNotEmpty)
-                    Text(
-                      _message,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black, // Black text inside the green box
                       ),
                     ),
                 ],
@@ -209,13 +256,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     if (_selectedWidgets.isEmpty) {
                       _message = 'Add at least a widget to save.';
                     } else {
-                      _message = ''; // Clear the message when a widget is added
+                      _message = '';
                     }
                   });
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: Colors.green.shade200,
                 minimumSize: const Size(200, 60),
                 side: const BorderSide(color: Colors.black, width: 1),
               ),
@@ -231,130 +278,5 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
-  }
-}
-
-class WidgetSelectionPage extends StatefulWidget {
-  const WidgetSelectionPage({super.key});
-
-  @override
-  State<WidgetSelectionPage> createState() => _WidgetSelectionPageState();
-}
-
-class _WidgetSelectionPageState extends State<WidgetSelectionPage> {
-  final List<String> _selectedItems = [];
-  bool _isTextFieldSelected = false;
-  bool _isImageSelected = false;
-  bool _isSaveButtonSelected = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select Widgets'),
-        backgroundColor: Colors.lightGreen[100],
-      ),
-      body: Container(
-        color: Colors.lightGreen[100],
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildCheckboxItem('TextField', _isTextFieldSelected, (value) {
-                  setState(() {
-                    _isTextFieldSelected = value!;
-                    _updateSelectedItems('TextField', value);
-                  });
-                }),
-                _buildCheckboxItem('Image', _isImageSelected, (value) {
-                  setState(() {
-                    _isImageSelected = value!;
-                    _updateSelectedItems('Image', value);
-                  });
-                }),
-                _buildCheckboxItem('SaveButton', _isSaveButtonSelected,
-                    (value) {
-                  setState(() {
-                    _isSaveButtonSelected = value!;
-                    _updateSelectedItems('SaveButton', value);
-                  });
-                }),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_selectedItems.isNotEmpty) {
-                      Navigator.pop(context, _selectedItems);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    minimumSize: const Size(200, 60),
-                    side: const BorderSide(color: Colors.black, width: 1),
-                  ),
-                  child: const Text(
-                    'Import Widgets',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCheckboxItem(
-      String label, bool value, ValueChanged<bool?> onChanged) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-          color: Colors.grey[400], borderRadius: BorderRadius.circular(8)),
-      child: GestureDetector(
-        onTap: () {
-          onChanged(!value);
-        },
-        child: ListTile(
-          contentPadding: const EdgeInsets.only(left: 24.0),
-          title: Row(
-            children: [
-              Container(
-                color: Colors.white,
-                height: 30,
-                width: 30,
-                child: Center(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    height: 24,
-                    width: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: value ? Colors.green : Colors.grey,
-                      border: Border.all(color: Colors.green),
-                    ),
-                    child: value ? null : const SizedBox(),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 20),
-              Text(label),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _updateSelectedItems(String item, bool isSelected) {
-    if (isSelected) {
-      _selectedItems.add(item);
-    } else {
-      _selectedItems.remove(item);
-    }
   }
 }
